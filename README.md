@@ -22,6 +22,7 @@ career-connect/
 |---|---|
 | `main` | Production-ready code. Chỉ merge từ `develop` khi release. |
 | `develop` | Nhánh tích hợp chính. Mọi feature merge vào đây trước. |
+| `feature/name` | Các nhánh tính năng riêng biệt của từng thành viên. |
 
 ### Branch làm việc
 
