@@ -22,6 +22,7 @@ career-connect/
 |---|---|
 | `main` | Production-ready code. Chỉ merge từ `develop` khi release. |
 | `develop` | Nhánh tích hợp chính. Mọi feature merge vào đây trước. |
+| `feature/name` | Các nhánh tính năng riêng biệt của từng thành viên. |
 
 ### Branch làm việc
 
@@ -174,18 +175,7 @@ Reviews
 
 ---
 
-## 6. Phân Công Theo Tuần
-
-| Tuần | Backend (Tiến) | Frontend (Minh/Khoa) |
-|---|---|---|
-| Tuần 1 | Setup NestJS, DB schema, Auth API, Mentor CRUD | Setup React, routing, trang MentorList + Profile |
-| Tuần 2 | Slot API + Booking API (concurrency control) | Slot picker UI, Booking flow |
-| Tuần 3 | Email service, Google Meet API, Review API | Dashboard Mentor/Mentee, Review form |
-| Tuần 4 | Bug fix, seed data, Swagger hoàn chỉnh | UI polish, bug fix, demo prep |
-
----
-
-## 7. Quy Tắc Bổ Sung
+## 6. Quy Tắc Bổ Sung
 
 - **Không commit lên `main` hoặc `develop` trực tiếp** — luôn qua PR.
 - **Không commit file `.env`** — chỉ commit `.env.example`.
