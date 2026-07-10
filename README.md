@@ -15,6 +15,57 @@ Xem chi tiết đầy đủ và lý do lựa chọn tại [`TECHSTACK.md`](./TEC
 | Email | Nodemailer / SendGrid |
 | Deploy | Railway/Render (BE + DB) + Vercel (FE) |
 
+## Git Flow
+
+### Branch chính
+
+| Branch | Mục đích |
+|---|---|
+| `main` | Production-ready code. Chỉ merge từ `develop` khi release. |
+| `develop` | Nhánh tích hợp chính. Mọi feature merge vào đây trước. |
+| `feature/name` | Các nhánh tính năng riêng biệt của từng thành viên. |
+
+### Branch làm việc
+
+Tạo từ `develop`, đặt tên theo format:
+
+```text
+feature/<tên-tính-năng>
+fix/<tên-lỗi>
+docs/<tên-tài-liệu>
+```
+
+**Ví dụ:**
+
+```text
+feature/mentor-profile
+feature/booking-engine
+feature/email-notification
+fix/double-booking-bug
+docs/api-swagger
+```
+
+### Quy trình làm việc hàng ngày
+
+```bash
+1. Checkout từ develop
+   git checkout develop && git pull origin develop
+   git checkout -b feature/ten-tinh-nang
+
+2. Code xong → commit
+   git add .
+   git commit -m "feat: mô tả ngắn"
+
+3. Push lên remote
+   git push origin feature/ten-tinh-nang
+
+4. Tạo Pull Request → develop
+   - Assign 1 người review (thường là CTO hoặc người liên quan)
+   - Không tự merge PR của mình
+
+5. Sau khi được approve → Merge & delete branch
+```
+
 ## Cấu trúc thư mục
 
 ```
