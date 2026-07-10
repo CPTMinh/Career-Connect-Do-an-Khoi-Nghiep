@@ -1,0 +1,147 @@
+// Career Connect — Prisma Schema
+// Phản ánh 5 entity cốt lõi của MVP: User, MentorProfile, Slot, Booking, Review
+// State machine của Slot: AVAILABLE -> BOOKED -> COMPLETED (hoặc CANCELLED)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------
+// ENUMS
+// ------------------------------
+
+enum Role {
+  MENTEE
+  MENTOR
+  ADMIN
+}
+
+enum ServiceType {
+  CV_REVIEW
+  MOCK_INTERVIEW
+  QNA
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+// ------------------------------
+// MODELS
+// ------------------------------
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         Role     @default(MENTEE)
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Quan hệ 1-1: chỉ user có role MENTOR mới có MentorProfile
+  mentorProfile MentorProfile?
+
+  // Các booking mà user này tạo với vai trò Mentee
+  bookingsAsMentee Booking[] @relation("MenteeBookings")
+
+  @@map("users")
+}
+
+model MentorProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  company      String
+  position     String
+  yearsOfExp   Int
+  industry     String // vd: IT, Marketing, Finance, HR
+  bio          String?
+  isApproved   Boolean  @default(false) // Admin duyệt trước khi hiển thị công khai
+
+  services     ServiceType[] // Các loại dịch vụ mentor này hỗ trợ
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  slots        Slot[]
+  reviews      Review[]
+
+  @@map("mentor_profiles")
+}
+
+model Slot {
+  id              String     @id @default(uuid())
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+
+  startTime       DateTime
+  endTime         DateTime
+  status          SlotStatus @default(AVAILABLE)
+
+  // Optimistic locking: tăng version mỗi lần update để chống race condition
+  // khi 2 Mentee cùng cố gắng book 1 slot cùng lúc.
+  version         Int        @default(0)
+
+  booking         Booking?
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([mentorProfileId, status])
+  @@map("slots")
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  slotId        String        @unique
+  slot          Slot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  menteeId      String
+  mentee        User          @relation("MenteeBookings", fields: [menteeId], references: [id], onDelete: Cascade)
+
+  serviceType   ServiceType
+  status        BookingStatus @default(CONFIRMED)
+  meetingLink   String?
+
+  cvFileUrl     String? // link CV mentee upload trước buổi Review CV
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  review        Review?
+
+  @@map("bookings")
+}
+
+model Review {
+  id              String        @id @default(uuid())
+  bookingId       String        @unique
+  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  mentorProfileId String
+  mentorProfile   MentorProfile @relation(fields: [mentorProfileId], references: [id], onDelete: Cascade)
+
+  rating          Int // 1 - 5
+  comment         String?
+
+  createdAt       DateTime      @default(now())
+
+  @@map("reviews")
+}

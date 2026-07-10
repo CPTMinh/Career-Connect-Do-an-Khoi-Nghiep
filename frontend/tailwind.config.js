@@ -1,8 +1,16 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ['./src/**/*.{js,jsx,ts,tsx}'],
+export default {
+  content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        // Màu thương hiệu tạm thời của Career Connect — chỉnh lại khi có brand kit
+        primary: {
+          DEFAULT: "#2563EB",
+          dark: "#1D4ED8",
+        },
+      },
+    },
   },
   plugins: [],
 };

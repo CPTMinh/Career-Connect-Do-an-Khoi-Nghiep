@@ -1,184 +1,129 @@
-# Career Connect — Git Structure & System Design
+# Career Connect
 
-## 1. Repo Structure
+Nền tảng kết nối Mentor - Mentee tập trung vào Review CV & Mock Interview.
+Đồ án môn Khởi Nghiệp — Khoa CNTT, Trường ĐH Khoa Học Tự Nhiên, ĐHQG-HCM.
 
-Dùng **monorepo** với 2 folder chính trong 1 repo:
+## Tech Stack
 
-```text
-career-connect/
-├── frontend/          # ReactJS app
-├── backend/           # NestJS app
-├── .gitignore
-└── README.md
-```
+Xem chi tiết đầy đủ và lý do lựa chọn tại [`TECHSTACK.md`](./TECHSTACK.md).
 
----
-
-## 2. Git Flow
-
-### Branch chính
-
-| Branch | Mục đích |
+| Tầng | Công nghệ |
 |---|---|
-| `main` | Production-ready code. Chỉ merge từ `develop` khi release. |
-| `develop` | Nhánh tích hợp chính. Mọi feature merge vào đây trước. |
-| `feature/name` | Các nhánh tính năng riêng biệt của từng thành viên. |
+| Frontend | React + TypeScript + Vite + TailwindCSS |
+| Backend | Node.js + Express + TypeScript |
+| Database | PostgreSQL + Prisma ORM |
+| Email | Nodemailer / SendGrid |
+| Deploy | Railway/Render (BE + DB) + Vercel (FE) |
 
-### Branch làm việc
+## Cấu trúc thư mục
 
-Tạo từ `develop`, đặt tên theo format:
-
-```text
-feature/<tên-tính-năng>
-fix/<tên-lỗi>
-docs/<tên-tài-liệu>
+```
+career-connect/
+├── backend/                 # Express + TS API
+│   ├── prisma/
+│   │   ├── schema.prisma    # Định nghĩa DB schema
+│   │   └── seed.ts          # Script tạo data mẫu
+│   └── src/
+│       ├── routes/          # Định nghĩa endpoint
+│       ├── controllers/     # Nhận request, gọi service, trả response
+│       ├── services/        # Business logic
+│       ├── repositories/    # Truy vấn Prisma thuần
+│       ├── middlewares/     # Error handler, auth (sau)
+│       └── utils/
+└── frontend/                 # React + Vite app
+    └── src/
+        ├── pages/            # Các trang chính
+        ├── components/       # Component tái sử dụng
+        ├── api/               # Gọi API qua axios
+        └── types/             # Type dùng chung, khớp với Prisma schema
 ```
 
-**Ví dụ:**
+Kiến trúc backend theo mô hình phân lớp:
+**Route → Controller → Service → Repository → Prisma/DB**
 
-```text
-feature/mentor-profile
-feature/booking-engine
-feature/email-notification
-fix/double-booking-bug
-docs/api-swagger
-```
+## Yêu cầu môi trường
 
-### Quy trình làm việc hàng ngày
+- Node.js >= 18
+- PostgreSQL >= 14 (hoặc dùng free tier của Railway/Supabase/Render)
+- npm >= 9
+
+## Hướng dẫn cài đặt & chạy thử
+
+### 1. Clone repo
 
 ```bash
-1. Checkout từ develop
-   git checkout develop && git pull origin develop
-   git checkout -b feature/ten-tinh-nang
-
-2. Code xong → commit
-   git add .
-   git commit -m "feat: mô tả ngắn"
-
-3. Push lên remote
-   git push origin feature/ten-tinh-nang
-
-4. Tạo Pull Request → develop
-   - Assign 1 người review (thường là CTO hoặc người liên quan)
-   - Không tự merge PR của mình
-
-5. Sau khi được approve → Merge & delete branch
+git clone <repo-url>
+cd career-connect
 ```
 
----
+### 2. Cài đặt Backend
 
-## 3. Commit Convention
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Mở .env và điền DATABASE_URL trỏ tới Postgres của bạn
 
-Dùng **Conventional Commits**:
+npx prisma generate       # Sinh Prisma Client
+npx prisma migrate dev    # Tạo bảng trong DB theo schema.prisma
+npm run seed               # Tạo data mẫu (1 mentor, 1 mentee, vài slot)
 
-```text
-feat:     Thêm tính năng mới
-fix:      Sửa bug
-docs:     Thay đổi tài liệu
-style:    Format code (không ảnh hưởng logic)
-refactor: Tái cấu trúc code
-chore:    Config, setup, dependency
+npm run dev                 # Chạy server tại http://localhost:4000
 ```
 
-**Ví dụ commit thực tế:**
+Kiểm tra: mở `http://localhost:4000/health` phải trả về `{"status":"ok"}`.
 
-```text
-feat: add mentor profile CRUD API
-fix: prevent double booking with row lock
-docs: update swagger for booking endpoint
-chore: add SendGrid config to .env.example
+### 3. Cài đặt Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+# Mặc định VITE_API_URL trỏ tới http://localhost:4000/api, để nguyên nếu chạy local
+
+npm run dev                 # Chạy tại http://localhost:5173
 ```
 
----
+### 4. Tài khoản demo (sau khi chạy `npm run seed`)
 
-## 4. Folder Structure Chi Tiết
+| Vai trò | Email | Password |
+|---|---|---|
+| Mentor | mentor.demo@careerconnect.dev | password123 |
+| Mentee | mentee.demo@careerconnect.dev | password123 |
 
-### Frontend (`/frontend`)
+> Lưu ý: MVP hiện tại **chưa có màn hình đăng nhập/JWT** — các API test dùng
+> trực tiếp `userId` lấy từ Prisma Studio (`npx prisma studio`) hoặc từ log
+> khi seed. Auth sẽ được bổ sung ở giai đoạn tiếp theo.
 
-```text
-frontend/
-├── public/
-├── src/
-│   ├── assets/          # Images, icons
-│   ├── components/      # Reusable UI components
-│   │   ├── common/      # Button, Input, Modal, ...
-│   │   └── layout/      # Header, Footer, Sidebar
-│   ├── pages/           # Route-level pages
-│   │   ├── Home/
-│   │   ├── MentorList/
-│   │   ├── MentorProfile/
-│   │   ├── Booking/
-│   │   └── Dashboard/
-│   ├── services/        # Axios API calls
-│   ├── hooks/           # Custom React hooks
-│   ├── utils/           # Helper functions
-│   ├── routes/          # React Router config
-│   └── App.jsx
-├── .env.example
-├── tailwind.config.js
-└── package.json
-```
+## Trạng thái phát triển (cập nhật liên tục — dùng cho PA5)
 
-### Backend (`/backend`)
+### ✅ Đã hoàn thành
+- Cấu trúc repo, layered architecture backend
+- Prisma schema đầy đủ 5 entity (User, MentorProfile, Slot, Booking, Review)
+- API tìm kiếm & xem chi tiết Mentor
+- API tạo slot, xem slot rảnh
+- API đặt lịch với cơ chế chống double-booking (optimistic locking)
+- Frontend: trang danh sách Mentor, trang chi tiết + đặt lịch
 
-```text
-backend/
-├── src/
-│   ├── modules/
-│   │   ├── auth/        # Login, register, JWT
-│   │   ├── users/       # User entity & CRUD
-│   │   ├── mentors/     # Mentor profile, filter, search
-│   │   ├── slots/       # Time slot management
-│   │   ├── bookings/    # Booking engine, concurrency control
-│   │   ├── reviews/     # Rating & review
-│   │   └── mail/        # SendGrid email service
-│   ├── common/
-│   │   ├── guards/      # JWT AuthGuard
-│   │   ├── decorators/  # Custom decorators
-│   │   └── filters/     # Exception filters
-│   ├── config/          # App config, DB config
-│   └── main.ts
-├── .env.example
-└── package.json
-```
+### 🚧 Đang phát triển
+- Đăng ký / đăng nhập (JWT)
+- Gửi email xác nhận booking + reminder tự động
+- Dashboard cho Mentor & Mentee
+- Tích hợp Google Meet link tự động
 
----
+### 📋 Dự kiến hoàn thiện trước PA6
+- Hệ thống Review & Rating sau buổi tư vấn
+- Trang Admin duyệt Mentor
+- Polish UI/UX theo thiết kế cuối
+- Viết test cho các API quan trọng (booking concurrency)
 
-## 5. API Contract (tóm tắt endpoints)
+### ⚠️ Vấn đề kỹ thuật còn tồn tại
+- Chưa có xử lý timezone khi hiển thị slot (đang mặc định giờ VN)
+- Chưa có rate-limiting cho API public
 
-FE và BE thống nhất contract này trước khi code — FE dùng mock data theo đây.
+## Nguồn tham khảo / công cụ sử dụng
 
-```text
-Auth
-  POST   /auth/register
-  POST   /auth/login
-
-Mentors
-  GET    /mentors              # Danh sách + filter (industry, service, company)
-  GET    /mentors/:id          # Profile chi tiết
-  POST   /mentors              # Tạo mentor profile (auth required)
-
-Slots
-  GET    /slots?mentorId=      # Lấy slot rảnh của mentor
-  POST   /slots                # Mentor tạo slot
-  DELETE /slots/:id            # Mentor xóa slot
-
-Bookings
-  POST   /bookings             # Mentee đặt lịch (lock slot ngay)
-  GET    /bookings/me          # Lịch sử booking của user
-  PATCH  /bookings/:id/cancel  # Hủy lịch
-
-Reviews
-  POST   /reviews              # Mentee gửi review sau buổi
-  GET    /reviews?mentorId=    # Lấy review của mentor
-```
-
----
-
-## 6. Quy Tắc Bổ Sung
-
-- **Không commit lên `main` hoặc `develop` trực tiếp** — luôn qua PR.
-- **Không commit file `.env`** — chỉ commit `.env.example`.
-- **Mỗi PR phải có mô tả** ngắn: làm gì, test thế nào.
-- **Resolve conflict** trước khi request review.
-- Swagger (`/api/docs`) phải được cập nhật cùng lúc với API mới.
+- Boilerplate cấu trúc được soạn thủ công bởi CTO nhóm dựa trên kiến trúc
+  layered phổ biến (Router-Controller-Service-Repository).
+- Thư viện sử dụng: Express, Prisma, React, TailwindCSS, Axios (đều là mã
+  nguồn mở, xem `package.json` để biết danh sách đầy đủ + license).
