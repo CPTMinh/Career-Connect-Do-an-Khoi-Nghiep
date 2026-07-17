@@ -1,0 +1,55 @@
+# Career Connect — Render Blueprint (Infrastructure as Code)
+# File này khai báo toàn bộ services trên Render.
+# Render sẽ đọc file này khi bạn tạo project từ GitHub repo.
+# Docs: https://docs.render.com/blueprint-spec
+
+services:
+  # ───────────────────────────────────────────
+  # Backend API (Web Service)
+  # ───────────────────────────────────────────
+  - type: web
+    name: career-connect-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: singapore  # Gần Việt Nam nhất
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # Render tự inject PORT — backend đã đọc process.env.PORT
+      - key: NODE_ENV
+        value: production
+      # Liên kết tự động với DB bên dưới
+      - key: DATABASE_URL
+        fromDatabase:
+          name: career-connect-db
+          property: connectionString
+      # FRONTEND_URL — thay bằng URL Vercel thật sau khi deploy FE
+      - key: FRONTEND_URL
+        value: https://career-connect-fe.vercel.app
+      # JWT — dùng generateValue để Render tạo random string an toàn
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      # Email (để trống, bật sau khi có SendGrid key)
+      - key: SMTP_HOST
+        value: ""
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        value: ""
+      - key: SMTP_PASS
+        value: ""
+      - key: MAIL_FROM
+        value: "Career Connect <no-reply@careerconnect.dev>"
+
+  # ───────────────────────────────────────────
+  # PostgreSQL Database
+  # ───────────────────────────────────────────
+databases:
+  - name: career-connect-db
+    plan: free
+    region: singapore
+    databaseName: career_connect
+    user: career_connect_user
