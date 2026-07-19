@@ -22,7 +22,7 @@ export function MentorDetailPage() {
       // TODO: thay menteeId cứng bằng user đang đăng nhập khi có Auth
       await apiClient.post("/bookings", {
         slotId,
-        menteeId: "REPLACE_WITH_LOGGED_IN_USER_ID",
+        menteeId: "ca9d5904-a62c-4c1a-9226-fb155386a71f", // Hardcode ID của mentee mẫu trong DB
         serviceType: "CV_REVIEW",
       });
       setBookingMessage("Đặt lịch thành công! Kiểm tra email để xem link buổi hẹn.");
