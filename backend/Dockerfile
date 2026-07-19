@@ -49,6 +49,10 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 # Copy compiled JS
 COPY --from=builder /app/dist ./dist
 
+# Copy startup script
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
+
 # Expose port (Render sẽ tự inject PORT env var)
 EXPOSE 4000
 
@@ -56,5 +60,5 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -q --spider http://localhost:${PORT:-4000}/health || exit 1
 
-# Start server
-CMD ["node", "dist/src/index.js"]
+# Khởi động: chạy migrate → start server (không cần Shell access)
+CMD ["sh", "./start.sh"]
