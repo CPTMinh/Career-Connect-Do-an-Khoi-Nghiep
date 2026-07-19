@@ -8,6 +8,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Cài OpenSSL — Prisma query engine cần libssl để kết nối PostgreSQL
+RUN apk add --no-cache openssl
+
 # Copy dependency files trước để tận dụng Docker layer cache
 # (nếu package.json không đổi → npm install sẽ dùng cache)
 COPY package.json package-lock.json ./
@@ -30,6 +33,9 @@ RUN npm run build
 FROM node:20-alpine AS production
 
 WORKDIR /app
+
+# Cài OpenSSL cho production runtime
+RUN apk add --no-cache openssl
 
 # Chỉ copy những gì cần cho runtime
 COPY package.json package-lock.json ./
