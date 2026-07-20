@@ -157,6 +157,11 @@ async function main() {
 
     // 3. Tạo Slot rảnh ngẫu nhiên (mỗi mentor có 2-5 slot trong 7 ngày tới)
     if (mentorUser.mentorProfile) {
+      // Clear old slots to avoid duplication if seed runs multiple times
+      await prisma.slot.deleteMany({
+        where: { mentorProfileId: mentorUser.mentorProfile.id },
+      });
+
       const numberOfSlots = Math.floor(Math.random() * 4) + 2; // 2 đến 5 slots
       
       const slotsToCreate = [];
