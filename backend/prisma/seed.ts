@@ -6,11 +6,16 @@ const prisma = new PrismaClient();
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 10);
 
-  // 1. Tạo Mentee mẫu
-  const menteeUser = await prisma.user.upsert({
-    where: { email: "mentee.demo@careerconnect.dev" },
-    update: {},
-    create: {
+  // 1. Tạo Mentee mẫu (Xóa cũ nếu có để đảm bảo ID luôn cố định)
+  try {
+    await prisma.user.delete({ where: { email: "mentee.demo@careerconnect.dev" } });
+  } catch (e) {
+    // Ignore error if user doesn't exist
+  }
+
+  const menteeUser = await prisma.user.create({
+    data: {
+      id: "ff7d0af6-be6e-4d69-b2fa-a81cd08f919f", // Force ID cố định để khớp với Frontend
       email: "mentee.demo@careerconnect.dev",
       passwordHash,
       fullName: "Nguyễn Thị Mentee",
