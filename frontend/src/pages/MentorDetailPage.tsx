@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { mentorApi } from "../api/mentor.api";
 import { apiClient } from "../api/client";
 import { MentorDetail, Slot } from "../types";
+import { useAuth } from "../contexts/AuthContext";
 
 export function MentorDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [mentor, setMentor] = useState<MentorDetail | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [bookingMessage, setBookingMessage] = useState<string | null>(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) return;
@@ -17,12 +20,16 @@ export function MentorDetailPage() {
   }, [id]);
 
   async function handleBook(slotId: string) {
+    if (!user) {
+      alert("Vui lòng đăng nhập để đặt lịch!");
+      navigate("/login");
+      return;
+    }
+
     setBookingMessage(null);
     try {
-      // TODO: thay menteeId cứng bằng user đang đăng nhập khi có Auth
       await apiClient.post("/bookings", {
         slotId,
-        menteeId: "ff7d0af6-be6e-4d69-b2fa-a81cd08f919f", // Hardcode ID của mentee mẫu trong DB
         serviceType: "CV_REVIEW",
       });
       setBookingMessage("Đặt lịch thành công! Kiểm tra email để xem link buổi hẹn.");

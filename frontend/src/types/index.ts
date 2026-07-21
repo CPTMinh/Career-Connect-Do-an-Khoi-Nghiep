@@ -5,6 +5,19 @@
 export type ServiceType = "CV_REVIEW" | "MOCK_INTERVIEW" | "QNA";
 export type SlotStatus = "AVAILABLE" | "BOOKED" | "COMPLETED" | "CANCELLED";
 
+export interface User {
+  id: string;
+  email: string;
+  fullName: string;
+  role: "MENTEE" | "MENTOR" | "ADMIN";
+  avatarUrl?: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
 export interface MentorSummary {
   id: string;
   company: string;
